@@ -16,12 +16,14 @@ const _dirname = path.resolve();
 
 
 //Middleware
+if(process.env.NODE_ENV !== "production"){
+
 app.use(
     cors({
       origin: "http://localhost:5173",
     })
   );
-
+}  
 
 app.use(express.json()); // this middleware will parse JSON bodies: req.body
 app.use(rateLimiter);
@@ -33,6 +35,14 @@ app.use(rateLimiter);
 // });
 
 app.use("/api/notes", notesRoutes);
+
+if (process.env.NODE_ENV === "production"){
+  app.use(express.static(path.join(_dirname,"../frontend/dist")));
+
+app.get("*", (res, req) =>{
+  res.sendFile(path.join(_dirname,"../frontend","dist", "index.html"));
+});
+}
 
 connectDB().then(() =>{
     app.listen(PORT, () => {
